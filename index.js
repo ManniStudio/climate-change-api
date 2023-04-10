@@ -11,44 +11,56 @@ const app = express()   // This calls the express app and instantiates it as a v
 
 const newspapers = [
 {
-    name: "thetimes",
-    addr: "https://www.thetimes.co.uk/search?source=nav-desktop&q=climate+change"
+    name: "the Global times",
+    addr: "https://www.thetimes.co.uk/search?source=nav-desktop&q=climate+change",
+    base: 'https://www.thetimes.co.uk/'
 },
 {
     name: "gaurdian",
-    addr: "https://www.theguardian.com/environment/climate-crisis"
+    addr: "https://www.theguardian.com/environment/climate-crisis",
+    base: ''
 },
 {
     name: "The NY Times",
-    addr: "https://www.nytimes.com/search?query=climate+change"
+    addr: "https://www.nytimes.com/search?query=climate+change",
+    base: 'https://www.nytimes.com'
 }
 ]
+
 const articles = []
 
+// Handle multiple news sources / loop thru each source
+newspapers.forEach(newspaper => {
+    axios.get(newspaper.addr) 
+    .then (response => {
+        const html = response.data
+        const $ = cheerio.load(html)
+        $('a:contains("climate")',html).each(function () {
+            const title = $(this).text()
+            const url = $(this).attr('href')
 
-// scrape web page
+            articles.push ({
+                title,
+                url: newspaper.base + url,
+                source: newspaper.name
+            }) 
+        })
+    })
+})
+
+
 //http://localhost:8000/
 app.get('/', (req, res) => {
     res.json('Welcome to my climate change AqqqPI app')
 })
 
+// scrape web page
 // hit http://localhost:8000/news
 app.get('/news', (req, res) => {
-    axios.get('https://www.theguardian.com/environment/climate-crisis')
-    .then((response) => {
-        const html = response.data
-        // console.log(html)   // just dumps html to console unreadable
-        const $ = cheerio.load(html)
-
-        $('a:contains("climate")',html).each(function () {
-            const title = $(this).text()
-            const url = $(this).attr('href')
-            articles.push ({
-                title, url
-            }) 
-        })
-        res.json(articles)
-    }).catch((err) => console.log(err))
+/*
+   removed all axios code here and replaced with
+*/
+res.json(articles)
 })
 
 
